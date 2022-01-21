@@ -1,4 +1,3 @@
-use super::AppState;
-pub mod user_controller;
+pub mod organisation_controller;
 
-pub use user_controller::init as init_user_controller;
+pub use organisation_controller::init as init_organisation_controller;
