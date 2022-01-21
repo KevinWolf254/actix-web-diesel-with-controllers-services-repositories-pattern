@@ -1,14 +1,16 @@
-use actix_web::{post, web, HttpResponse, Responder};
-use crate::establish_connection;
-use crate::{models::organisation::CreateOrganisation, repositories::organisation_repository::create_organisation};
+use crate::Pool;
+use actix_web::{post, web, HttpResponse, Error};
+use crate::models::organisation::{CreateOrganisationRequest};
+use crate::services::organisation_service::create_organisation;
 
 pub fn init(cfg: &mut web::ServiceConfig) {
     cfg.service(create);
 }
 
 #[post("/organisation")]
-async fn create(req_body: web::Json<CreateOrganisation>) -> impl Responder {
-    let conn = establish_connection();
-    let created_organisation = create_organisation(&conn, &req_body);
-    HttpResponse::Ok().json(created_organisation)
+pub async fn create(db: web::Data<Pool>, request: web::Json<CreateOrganisationRequest>) -> Result<HttpResponse, Error> {
+    Ok(web::block(move || create_organisation(db, request))
+    .await
+    .map(|organisation| HttpResponse::Created().json(organisation))
+    .map_err(|_| HttpResponse::InternalServerError())?)
 }

@@ -15,12 +15,20 @@ pub struct Organisation {
 }
 
 
-#[derive(Debug, Clone, Deserialize, Insertable)]
+#[derive(Debug, Serialize, Deserialize, Insertable)]
 #[table_name = "organisations"]
-pub struct CreateOrganisation {
+pub struct CreateOrganisation<'a> {
+    pub name: &'a str,
+    pub pin_number: &'a str,
+    pub description: Option<&'a str>,
+    pub vat_number: Option<&'a str>,
+    pub created: NaiveDateTime,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateOrganisationRequest {
     pub name: String,
+    pub pin_number: String,
     pub description: Option<String>,
     pub vat_number: Option<String>,
-    pub pin_number: String,
-    pub created: NaiveDateTime 
 }
