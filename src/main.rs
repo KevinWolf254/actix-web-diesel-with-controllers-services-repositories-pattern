@@ -1,8 +1,20 @@
-use actix_web::{App, HttpServer};
+#[macro_use]
+extern crate diesel;
+extern crate dotenv;
 
-use diesel::r2d2::{self, ConnectionManager};
-use diesel::PgConnection;
-use rent_management_system_api::{controllers, Pool};
+pub mod models;
+pub mod schema;
+pub mod services;
+pub mod controllers;
+pub mod repositories;
+pub type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
+
+use actix_web::{App, HttpServer};
+use diesel::{PgConnection, r2d2::{self, ConnectionManager}};
+// use diesel::r2d2::{self, ConnectionManager};
+// use diesel::PgConnection;
+// use rent_management_system_api::{controllers, Pool};
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
