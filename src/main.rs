@@ -2,38 +2,39 @@
 extern crate diesel;
 extern crate dotenv;
 
-pub mod models;
-pub mod schema;
-pub mod services;
-pub mod controllers;
-pub mod repositories;
-pub type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
+use tracing::info;
+use color_eyre::Result;
+use crate::config::Config;
+use actix_web::{App, HttpServer, middleware::Logger};
+use diesel::{r2d2::{self, ConnectionManager}, PgConnection,};
 
-use actix_web::{App, HttpServer};
-use diesel::{PgConnection, r2d2::{self, ConnectionManager}};
-// use diesel::r2d2::{self, ConnectionManager};
-// use diesel::PgConnection;
-// use rent_management_system_api::{controllers, Pool};
-
+mod config;
+mod models;
+mod schema;
+mod services;
+mod controllers;
+mod repositories;
+type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    dotenv::dotenv().ok();
+async fn main() -> Result<()> {
 
-    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let config = Config::from_env().expect("Server configuration");
 
-    // create db connection pool
-    let manager = ConnectionManager::<PgConnection>::new(database_url);
-    let pool: Pool = r2d2::Pool::builder()
-        .build(manager)
-        .expect("Failed to create pool.");
+    let pool = config.database_pool().await
+        .expect("Database configuration.");
+
+    info!("Starting server at http://{}:{}/", config.host, config.port);
 
     HttpServer::new(move || {
         App::new()
+            .wrap(Logger::default())
             .data(pool.clone())
             .configure(controllers::init_organisation_controller)
     })
-    .bind("127.0.0.1:8080")?
+    .bind(format!("{}:{}", config.host, config.port))?
     .run()
-    .await
+    .await?;
+
+    Ok(())
 }
