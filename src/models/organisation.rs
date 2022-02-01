@@ -32,3 +32,19 @@ pub struct CreateOrganisationRequest {
     pub description: Option<String>,
     pub vat_number: Option<String>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateOrganisationRequest {
+    pub id: i32,
+    pub description: Option<String>,
+    pub vat_number: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Queryable, AsChangeset)]
+#[table_name = "organisations"]
+pub struct UpdateOrganisation {
+    pub id: i32,
+    pub description: Option<String>,
+    pub vat_number: Option<String>,
+    pub updated: NaiveDateTime,
+}
